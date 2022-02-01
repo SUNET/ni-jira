@@ -88,10 +88,9 @@ r = requests.delete(os.environ["NI_LOCATION"] + "/api/v1/ticket/", auth=NIAuth()
 assert r.status_code == 200 or r.status_code == 204
 
 # Create tickets and relationships
-for t in tickets[:5]:
+for t in tickets:
     r = requests.post(
         os.environ["NI_LOCATION"] + "/api/v1/ticket/",
-        # "http://localhost:80",
         auth=NIAuth(),
         json={
             "node_type": "/api/v1/node_type/ticket/",
