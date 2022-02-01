@@ -22,10 +22,14 @@ for v in env_vars:
         print(f"Error: {v} must be defined")
         sys.exit(1)
 
-
+# TODO: How to get *all* issues?
 r = requests.get(
-    os.environ["JIRA_LOCATION"]
-    + "/rest/api/2/search?jql=",  # TODO: How to get all tickets?
+    os.environ["JIRA_LOCATION"] + "/rest/api/2/search",
+    params={
+        "jql": "",
+        "fields": "summary,customfield_10286,customfield_10287,customfield_10288,"
+        + "customfield_10289,customfield_10290,customfield_10292,customfield_10294",
+    },
     auth=(os.environ["JIRA_USER"], os.environ["JIRA_PASSWORD"]),
 )
 
