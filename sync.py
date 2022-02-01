@@ -8,6 +8,8 @@ import sys
 
 pp = pprint.PrettyPrinter(indent=4)
 
+MAX_RESULTS = 5000  # This is the highest value allowed on this Jira server
+
 env_vars = [
     "JIRA_LOCATION",
     "JIRA_USER",
@@ -22,16 +24,28 @@ for v in env_vars:
         print(f"Error: {v} must be defined")
         sys.exit(1)
 
-# TODO: How to get *all* issues?
-r = requests.get(
-    os.environ["JIRA_LOCATION"] + "/rest/api/2/search",
-    params={
-        "jql": "",
-        "fields": "summary,customfield_10286,customfield_10287,customfield_10288,"
-        + "customfield_10289,customfield_10290,customfield_10292,customfield_10294",
-    },
-    auth=(os.environ["JIRA_USER"], os.environ["JIRA_PASSWORD"]),
-)
+tickets = []
+i = 0
+while True:
+    r = requests.get(
+        os.environ["JIRA_LOCATION"] + "/rest/api/2/search",
+        params={
+            "jql": "",
+            "fields": "summary,customfield_10286,customfield_10287,customfield_10288,"
+            + "customfield_10289,customfield_10290,customfield_10292,customfield_10294",
+            "maxResults": MAX_RESULTS,
+            "startAt": i,
+        },
+        auth=(os.environ["JIRA_USER"], os.environ["JIRA_PASSWORD"]),
+    )
+    assert r.status_code == 200
+    chunk = r.json()["issues"]
+    if len(chunk) == 0:
+        break
+    tickets += chunk
+    i += MAX_RESULTS
+
+print(f"{len(tickets)} tickets")
 
 # fmt:off
 tickets = [
@@ -46,7 +60,7 @@ tickets = [
         "escalated_to":  t["fields"].get("customfield_10292"),
         "affected_orgs": t["fields"].get("customfield_10294"),
     }
-    for t in r.json()["issues"]
+    for t in tickets
 ]
 # fmt:on
 
