@@ -24,6 +24,15 @@ for v in env_vars:
         print(f"Error: {v} must be defined")
         sys.exit(1)
 
+
+class NIAuth(requests.auth.AuthBase):
+    def __call__(self, r):
+        r.headers[
+            "Authorization"
+        ] = f"ApiKey {os.environ['NI_USER']}:{os.environ['NI_PASSWORD']}"
+        return r
+
+
 tickets = []
 i = 0
 while True:
@@ -73,14 +82,6 @@ for t in tickets:
         t["service"] = [s.strip() for s in t["service"].split(",")]
     else:
         t["service"] = []
-
-
-class NIAuth(requests.auth.AuthBase):
-    def __call__(self, r):
-        r.headers[
-            "Authorization"
-        ] = f"ApiKey {os.environ['NI_USER']}:{os.environ['NI_PASSWORD']}"
-        return r
 
 
 # Clear all tickets
